@@ -5,6 +5,7 @@
 // Quando você atualizar o PDF, rode o script build_index.py (incluso no ZIP) e suba de novo.
 
 const INDEX_PATH = "data/index.json";
+const BUILD_VERSION = "20260112_0045";
 
 const CATEGORIAS = ["OVAL", "SPORTS CAR", "FORMULA CAR", "DIRT OVAL", "DIRT ROAD", "UNRANKED"];
 const CLASSES = ["R","D","C","B","A"];
@@ -237,6 +238,7 @@ function renderTable(rows){
       <td>${escHTML(d.categoria || "")}</td>
       <td style="text-align:center">${escHTML(d.classe || "")}</td>
       <td>${escHTML(d.serie || "")}</td>
+      <td>${escHTML(d.pista || "")}</td>
       <td>${escHTML(d.carros || "")}</td>
     `;
     tbody.appendChild(tr);
@@ -342,7 +344,7 @@ async function boot(){
       initFromIndex(cache, "cache");
       // faz refresh em background (sem travar a UI)
       setStatus("Atualizando…", "#ffcc00");
-      fetch(INDEX_PATH, { cache: "no-store" })
+      fetch(`${INDEX_PATH}?v=${BUILD_VERSION}`, { cache: "no-store" })
         .then(r => { if(!r.ok) throw new Error("Falha ao atualizar índice"); return r.json(); })
         .then(idx => {
           // só atualiza se mudou o hash (ou tamanho)
@@ -361,7 +363,7 @@ async function boot(){
     // 2) primeira vez: carrega do arquivo (pode mostrar "Aguarde..." só se demorar)
     showLoadingDeferred("Carregando índice (data/index.json)…");
 
-    const resp = await fetch(INDEX_PATH, { cache: "no-store" });
+    const resp = await fetch(`${INDEX_PATH}?v=${BUILD_VERSION}`, { cache: "no-store" });
     if (!resp.ok) throw new Error(`Não consegui abrir: ${INDEX_PATH}`);
     const idx = await resp.json();
 

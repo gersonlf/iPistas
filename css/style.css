@@ -183,7 +183,7 @@ button.primary{
 .tbl{
   width:100%;
   border-collapse:collapse;
-  min-width:1050px;
+  min-width:1180px;
 }
 .tbl th, .tbl td{
   padding:10px 12px;
@@ -230,12 +230,19 @@ button.primary{
 }
 
 
-/* Tabela: não quebrar linha em Categoria e Série (apenas Carros pode quebrar) */
+.tbl th:nth-child(6), .tbl td:nth-child(6){
+  white-space: normal;
+  word-break: break-word;
+}
+
+
+/* Tabela: não quebrar linha em Categoria, Série e Pista (apenas Carros pode quebrar) */
 .tbl th:nth-child(3), .tbl td:nth-child(3),
-.tbl th:nth-child(5), .tbl td:nth-child(5){
+.tbl th:nth-child(5), .tbl td:nth-child(5),
+.tbl th:nth-child(6), .tbl td:nth-child(6){
   white-space: nowrap;
 }
-.tbl th:nth-child(6), .tbl td:nth-child(6){
+.tbl th:nth-child(7), .tbl td:nth-child(7){
   white-space: normal;
   word-break: break-word;
 }
