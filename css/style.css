@@ -47,7 +47,7 @@ body{
   display:grid;
   grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr auto;
   gap:12px;
-  align-items:end;
+  align-items:start;
 }
 @media (max-width: 1100px){
   .grid{grid-template-columns: 1fr; }
@@ -246,3 +246,6 @@ button.primary{
   white-space: normal;
   word-break: break-word;
 }
+
+/* Mantém botões na parte de baixo enquanto os campos ficam alinhados no topo */
+.actions{align-self:end;}
