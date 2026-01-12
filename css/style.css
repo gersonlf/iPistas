@@ -205,3 +205,6 @@ button.primary{
   width: 130px;
   min-width: 130px;
 }
+
+/* Garante que elementos com atributo hidden fiquem realmente ocultos */
+[hidden]{display:none !important;}
