@@ -228,3 +228,14 @@ button.primary{
 @media (min-width: 1800px){
   .wrap{ padding-left:32px; padding-right:32px; }
 }
+
+
+/* Tabela: não quebrar linha em Categoria e Série (apenas Carros pode quebrar) */
+.tbl th:nth-child(3), .tbl td:nth-child(3),
+.tbl th:nth-child(5), .tbl td:nth-child(5){
+  white-space: nowrap;
+}
+.tbl th:nth-child(6), .tbl td:nth-child(6){
+  white-space: normal;
+  word-break: break-word;
+}
