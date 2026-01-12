@@ -208,3 +208,14 @@ button.primary{
 
 /* Garante que elementos com atributo hidden fiquem realmente ocultos */
 [hidden]{display:none !important;}
+
+/* Alinhamento dos campos (Pista / Filtrar série) */
+.field label{
+  line-height: 1.2;
+  height: 16px;
+  display:flex;
+  align-items:flex-end;
+}
+.field .lookup, .field input{
+  margin-top: 0;
+}

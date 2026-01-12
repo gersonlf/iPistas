@@ -199,10 +199,19 @@ trackInput.addEventListener("keydown", (ev) => {
     return;
   }
   if (ev.key === "Enter"){
+    // Se o dropdown está aberto, Enter seleciona o item destacado.
     if (!dropdown.hidden && selIndex >= 0 && pistasFiltradas[selIndex]){
       selectTrack(pistasFiltradas[selIndex]);
       closeDropdown();
       ev.preventDefault();
+      // Após selecionar, já dispara a busca
+      btnSearch.click();
+      return;
+    }
+    // Se o dropdown está fechado, Enter já executa Buscar direto
+    if (dropdown.hidden){
+      ev.preventDefault();
+      btnSearch.click();
       return;
     }
   }
