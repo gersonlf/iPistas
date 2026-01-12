@@ -51,7 +51,7 @@ body{
 }
 @media (max-width: 1100px){
   .grid{grid-template-columns: 1fr; }
-  .actions{justify-content:flex-start;}
+  .actions{display:flex; gap:10px;}
 }
 .field label{
   display:block;
@@ -126,11 +126,7 @@ body{
 }
 .chk input{width:auto;}
 
-.actions{
-  display:flex;
-  gap:10px;
-  justify-content:flex-end;
-}
+.actions{display:flex; gap:10px;}
 button{
   padding:10px 12px;
   border-radius:10px;
@@ -248,7 +244,7 @@ button.primary{
 }
 
 /* Mantém botões na parte de baixo enquanto os campos ficam alinhados no topo */
-.actions{align-self:end;}
+.actions{display:flex; gap:10px;}
 
 /* Select com o mesmo visual do input */
 .field select{
@@ -279,4 +275,14 @@ button.primary{
 }
 .field.compact.checks .chk{
   font-size:12px;
+}
+
+/* Ações em linha separada (embaixo) e alinhadas à esquerda */
+.actionsRow{
+  grid-column: 1 / -1;
+  display:flex;
+  gap:10px;
+  justify-content:flex-start;
+  align-self:start;
+  margin-top:6px;
 }

@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>iPista (Web) • SeasonSchedule</title>
-  <link rel="stylesheet" href="css/style.css?v=20260112_0205" />
+  <link rel="stylesheet" href="css/style.css?v=20260112_0225" />
 </head>
 <body>
   <header class="topo">
@@ -21,6 +21,11 @@
   <main class="wrap">
     <section class="card">
       <div class="grid">
+<div class="actions actionsRow">
+          <button id="btnClear" type="button">Limpar</button>
+          <button id="btnSearch" type="button" class="primary">Buscar</button>
+        </div>
+      
         <div class="field" compact">
           <label>Pista</label>
           <div class="lookup">
@@ -65,11 +70,7 @@
           <div class="hint">Ordenação dos resultados.</div>
         </div>
 
-        <div class="actions">
-          <button id="btnClear" type="button">Limpar</button>
-          <button id="btnSearch" type="button" class="primary">Buscar</button>
         </div>
-      </div>
 
       <div class="loading" id="loading" hidden>
         <div class="spinner"></div>
@@ -109,6 +110,6 @@
       </div>
     </section>
   </main>
-<script src="js/app.js?v=20260112_0205"></script>
+<script src="js/app.js?v=20260112_0225"></script>
 </body>
 </html>
