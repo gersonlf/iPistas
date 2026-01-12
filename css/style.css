@@ -278,11 +278,11 @@ button.primary{
 }
 
 /* Ações em linha separada (embaixo) e alinhadas à esquerda */
+
+/* Ações abaixo dos filtros e alinhadas à esquerda */
 .actionsRow{
-  grid-column: 1 / -1;
   display:flex;
   gap:10px;
   justify-content:flex-start;
-  align-self:start;
-  margin-top:6px;
+  margin-top:10px;
 }
