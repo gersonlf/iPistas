@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>iRacing • Season Schedule (PDF)</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="topo">
+    <div class="titulo">
+      <h1>Season Schedule</h1>
+      <div class="sub">Lendo dados do PDF local do repositório</div>
+    </div>
+    <div class="status" id="statusTopo">
+      <span class="bolinha" id="bolinha"></span>
+      <span id="statusTexto">Pronto</span>
+    </div>
+  </header>
+
+  <main class="conteudo">
+    <section class="card">
+      <div class="linha">
+        <div class="campo">
+          <label for="entradaPista">Pista</label>
+
+          <!-- “Lookup” sem roubar foco: input + dropdown filtrado -->
+          <div class="lookup">
+            <input id="entradaPista" type="text" placeholder="Digite para filtrar..." autocomplete="off" />
+            <button id="botaoSeta" class="seta" type="button" aria-label="Abrir lista">▼</button>
+          </div>
+
+          <div id="listaDropdown" class="dropdown" hidden></div>
+          <div class="ajuda">Dica: digite para filtrar, Enter seleciona, Esc limpa/fecha.</div>
+        </div>
+
+        <div class="acoes">
+          <button id="btnRecarregar" type="button">Recarregar PDF</button>
+          <button id="btnBuscar" type="button" class="primario">Buscar</button>
+        </div>
+      </div>
+
+      <div class="aguarde" id="aguarde" hidden>
+        <div class="spinner"></div>
+        <div>
+          <div class="aguardeTitulo">Aguarde…</div>
+          <div class="aguardeSub" id="aguardeSub">Abrindo o PDF…</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="cardTopo">
+        <h2 id="tituloResultado">Selecione uma pista</h2>
+        <div class="mini" id="miniInfo"></div>
+      </div>
+
+      <div class="tabelaWrap">
+        <table class="tabela" id="tabela">
+          <thead>
+            <tr>
+              <th>Semana</th>
+              <th>Data</th>
+              <th>Série</th>
+              <th>Detalhes</th>
+            </tr>
+          </thead>
+          <tbody id="corpoTabela">
+            <tr><td colspan="4" class="vazio">Nenhum dado carregado ainda.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- PDF.js via CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.js"></script>
+  <script>
+    // worker do PDF.js (necessário para performance)
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.js";
+  </script>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
