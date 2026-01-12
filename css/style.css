@@ -29,8 +29,9 @@ body{
 .status{display:flex; align-items:center; gap:10px; color:var(--muted); font-size:13px;}
 .dot{width:10px;height:10px;border-radius:50%;background:var(--warn);display:inline-block;}
 .wrap{
-  max-width:1200px;
-  margin:0 auto;
+  width:100%;
+  max-width:none;
+  margin:0;
   padding:16px;
   display:flex;
   flex-direction:column;
@@ -218,4 +219,12 @@ button.primary{
 }
 .field .lookup, .field input{
   margin-top: 0;
+}
+
+/* Layout full width: reduz “margens” em telas grandes e mantém conforto em telas pequenas */
+@media (min-width: 1400px){
+  .wrap{ padding-left:24px; padding-right:24px; }
+}
+@media (min-width: 1800px){
+  .wrap{ padding-left:32px; padding-right:32px; }
 }
