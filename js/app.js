@@ -5,7 +5,7 @@
 // Quando você atualizar o PDF, rode o script build_index.py (incluso no ZIP) e suba de novo.
 
 const INDEX_PATH = "data/index.json";
-const BUILD_VERSION = "20260112_0245";
+const BUILD_VERSION = "20260112_0315";
 
 const CATEGORIAS = ["OVAL", "SPORTS CAR", "FORMULA CAR", "DIRT OVAL", "DIRT ROAD", "UNRANKED"];
 const CLASSES = ["R","D","C","B","A"];
@@ -20,6 +20,7 @@ const trackInput = document.getElementById("trackInput");
 const seriesFilter = document.getElementById("seriesFilter");
 const carsFilter = document.getElementById("carsFilter");
 const sortSelect = document.getElementById("sortSelect");
+const consultaDate = document.getElementById("consultaDate");
 const btnSearch = document.getElementById("btnSearch");
 const btnClear = document.getElementById("btnClear");
 
@@ -50,6 +51,7 @@ function showLoading(txt){
   seriesFilter.disabled = true;
   if (carsFilter) carsFilter.disabled = true;
   if (sortSelect) sortSelect.disabled = true;
+  if (consultaDate) consultaDate.disabled = true;
   btnSearch.disabled = true;
   btnClear.disabled = true;
   btnToggleDrop.disabled = true;
@@ -62,6 +64,7 @@ function hideLoading(){
   seriesFilter.disabled = false;
   if (carsFilter) carsFilter.disabled = false;
   if (sortSelect) sortSelect.disabled = false;
+  if (consultaDate) consultaDate.disabled = false;
   btnSearch.disabled = false;
   btnClear.disabled = false;
   btnToggleDrop.disabled = false;
@@ -74,6 +77,21 @@ function escHTML(s){
     .replace(/</g,"&lt;")
     .replace(/>/g,"&gt;")
     .replace(/"/g,"&quot;");
+}
+
+function parseISODate(iso){
+  // iso: YYYY-MM-DD -> Date (meia-noite local)
+  if (!iso) return null;
+  const m = /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/.exec(iso);
+  if (!m) return null;
+  return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+}
+function todayISO(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,"0");
+  const day = String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
 }
 
 function norm(s){
@@ -232,12 +250,23 @@ document.addEventListener("mousedown", (ev) => {
 // ===== Tabela =====
 function renderTable(rows){
   tbody.innerHTML = "";
+  const dtConsulta = parseISODate(consultaDate ? consultaDate.value : "") || parseISODate(todayISO());
   if (!rows.length){
     tbody.innerHTML = `<tr><td colspan="6" class="empty">Nada encontrado.</td></tr>`;
     return;
   }
   for (const d of rows){
     const tr = document.createElement("tr");
+    // Destaque: se a data de consulta cair na semana desta linha
+    const dtIni = parseISODate(d.inicio_semana);
+    if (dtConsulta && dtIni){
+      const dtFim = new Date(dtIni.getTime());
+      dtFim.setDate(dtFim.getDate() + 6);
+      if (dtConsulta >= dtIni && dtConsulta <= dtFim){
+        tr.classList.add("weekNow");
+        tr.title = "Semana da corrida (data de consulta dentro da semana)";
+      }
+    }
     tr.innerHTML = `
       <td>${escHTML(d.inicio_semana || "")}</td>
       <td style="text-align:center">${escHTML(d.week ?? "")}</td>
@@ -302,6 +331,7 @@ btnClear.addEventListener("click", () => {
   seriesFilter.value = "";
   if (carsFilter) carsFilter.value = "";
   if (sortSelect) sortSelect.value = "date";
+  if (consultaDate) consultaDate.value = todayISO();
   catChecks.forEach(c => c.checked = true);
   classChecks.forEach(c => c.checked = true);
   closeDropdown();
@@ -314,6 +344,7 @@ btnClear.addEventListener("click", () => {
 seriesFilter.addEventListener("input", () => applyFilters());
 if (carsFilter) carsFilter.addEventListener("input", () => applyFilters());
 if (sortSelect) sortSelect.addEventListener("change", () => applyFilters());
+if (consultaDate) consultaDate.addEventListener("change", () => applyFilters());
 
 const INDEX_CACHE_KEY = "ipista_index_cache_v1";
 
