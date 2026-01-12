@@ -264,3 +264,19 @@ button.primary{
   border-color:rgba(77,163,255,.6);
   box-shadow: 0 0 0 3px rgba(77,163,255,.12);
 }
+
+/* Campos compactos (reduz altura para os botões subirem um pouco) */
+.field.compact input,
+.field.compact select{
+  padding:8px 10px;
+}
+.field.compact .hint{
+  display:none;
+}
+.field.compact.checks .checkrow{
+  padding:6px 8px;
+  gap:8px;
+}
+.field.compact.checks .chk{
+  font-size:12px;
+}

@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>iPista (Web) • SeasonSchedule</title>
-  <link rel="stylesheet" href="css/style.css?v=20260112_0145" />
+  <link rel="stylesheet" href="css/style.css?v=20260112_0205" />
 </head>
 <body>
   <header class="topo">
@@ -21,7 +21,7 @@
   <main class="wrap">
     <section class="card">
       <div class="grid">
-        <div class="field">
+        <div class="field" compact">
           <label>Pista</label>
           <div class="lookup">
             <input id="trackInput" type="text" placeholder="Digite para filtrar (contém)..." autocomplete="off" />
@@ -31,7 +31,7 @@
           <div class="hint">Dicas: ↓ abre, ↑/↓ navega, Enter seleciona, Esc limpa/fecha. O foco fica no campo.</div>
         </div>
 
-        <div class="field">
+        <div class="field" compact">
           <label>Filtrar série (opcional)</label>
           <input id="seriesFilter" type="text" placeholder="Ex.: mx-5, porsche, nascar..." autocomplete="off" />
           <div class="hint">Filtro “contém” no nome da série.</div>
@@ -49,7 +49,7 @@
           <div class="checkrow" id="cats"></div>
         </div>
 
-        <div class="field checks">
+        <div class="field checks compact">
           <label>Classes</label>
           <div class="checkrow" id="classes"></div>
         </div>
@@ -109,6 +109,6 @@
       </div>
     </section>
   </main>
-<script src="js/app.js?v=20260112_0145"></script>
+<script src="js/app.js?v=20260112_0205"></script>
 </body>
 </html>
