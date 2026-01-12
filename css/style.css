@@ -287,10 +287,6 @@ button.primary{
   margin-top:10px;
 }
 
-/* Input date: mantém visual consistente */
-input[type="date"]{
-  color-scheme: dark;
-}
 
 /* Destaque da semana da corrida (com base na data de consulta) */
 .tbl tr.weekNow td{
