@@ -5,7 +5,7 @@
 // Quando você atualizar o PDF, rode o script build_index.py (incluso no ZIP) e suba de novo.
 
 const INDEX_PATH = "data/index.json";
-const BUILD_VERSION = "20260112_0046";
+const BUILD_VERSION = "20260112_0105";
 
 const CATEGORIAS = ["OVAL", "SPORTS CAR", "FORMULA CAR", "DIRT OVAL", "DIRT ROAD", "UNRANKED"];
 const CLASSES = ["R","D","C","B","A"];
@@ -18,6 +18,7 @@ const elCacheInfo = document.getElementById("cacheInfo");
 
 const trackInput = document.getElementById("trackInput");
 const seriesFilter = document.getElementById("seriesFilter");
+const carsFilter = document.getElementById("carsFilter");
 const btnSearch = document.getElementById("btnSearch");
 const btnClear = document.getElementById("btnClear");
 
@@ -46,6 +47,7 @@ function showLoading(txt){
   elLoading.hidden = false;
   trackInput.disabled = true;
   seriesFilter.disabled = true;
+  if (carsFilter) carsFilter.disabled = true;
   btnSearch.disabled = true;
   btnClear.disabled = true;
   btnToggleDrop.disabled = true;
@@ -56,6 +58,7 @@ function hideLoading(){
   elLoading.hidden = true;
   trackInput.disabled = false;
   seriesFilter.disabled = false;
+  if (carsFilter) carsFilter.disabled = false;
   btnSearch.disabled = false;
   btnClear.disabled = false;
   btnToggleDrop.disabled = false;
@@ -250,6 +253,7 @@ function applyFilters(){
   resultTitle.textContent = pistaSel ? `Pista: ${pistaSel}` : "Pista: (nenhuma)";
 
   const fSerie = norm(seriesFilter.value);
+  const fCarros = carsFilter ? norm(carsFilter.value) : "";
   const catsOk = getSelectedValues(catChecks);
   const clsOk = getSelectedValues(classChecks);
 
@@ -262,6 +266,9 @@ function applyFilters(){
     }
     if (fSerie){
       if (!norm(d.serie).includes(fSerie)) return false;
+    }
+    if (fCarros){
+      if (!norm(d.carros).includes(fCarros)) return false;
     }
     return true;
   });
@@ -281,6 +288,7 @@ btnSearch.addEventListener("click", () => {
 btnClear.addEventListener("click", () => {
   trackInput.value = "";
   seriesFilter.value = "";
+  if (carsFilter) carsFilter.value = "";
   catChecks.forEach(c => c.checked = true);
   classChecks.forEach(c => c.checked = true);
   closeDropdown();
@@ -291,6 +299,7 @@ btnClear.addEventListener("click", () => {
 
 [catsWrap, classesWrap].forEach(el => el.addEventListener("change", () => applyFilters()));
 seriesFilter.addEventListener("input", () => applyFilters());
+if (carsFilter) carsFilter.addEventListener("input", () => applyFilters());
 
 const INDEX_CACHE_KEY = "ipista_index_cache_v1";
 
