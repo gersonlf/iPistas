@@ -198,3 +198,6 @@ button.primary{
   top:0;
 }
 .empty{color:var(--muted); text-align:center;}
+
+.pdflink{color:var(--prim); text-decoration:none;}
+.pdflink:hover{text-decoration:underline;}
