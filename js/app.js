@@ -281,27 +281,86 @@ btnClear.addEventListener("click", () => {
 [catsWrap, classesWrap].forEach(el => el.addEventListener("change", () => applyFilters()));
 seriesFilter.addEventListener("input", () => applyFilters());
 
+const INDEX_CACHE_KEY = "ipista_index_cache_v1";
+
+function loadIndexCache(){
+  try{
+    const raw = localStorage.getItem(INDEX_CACHE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  }catch(_){
+    return null;
+  }
+}
+
+function saveIndexCache(obj){
+  try{
+    localStorage.setItem(INDEX_CACHE_KEY, JSON.stringify(obj));
+  }catch(_){}
+}
+
+// Evita mostrar "Aguarde..." se carregar rápido.
+// Só mostra o painel se demorar mais que ~350ms.
+let _loadingTimer = null;
+function showLoadingDeferred(msg){
+  if (_loadingTimer) clearTimeout(_loadingTimer);
+  _loadingTimer = setTimeout(() => showLoading(msg), 350);
+}
+function hideLoadingSafe(){
+  if (_loadingTimer) clearTimeout(_loadingTimer);
+  _loadingTimer = null;
+  hideLoading();
+}
+
+function initFromIndex(idx, origem){
+  dados = idx.records || [];
+  pistas = idx.tracks || [];
+
+  pistasFiltradas = pistas.slice();
+  renderDropdown();
+  closeDropdown();
+
+  setStatus("Pronto", "#33d17a");
+  elCacheInfo.textContent = `Índice: ok • Registros: ${dados.length} • Pistas: ${pistas.length}` + (origem ? ` • ${origem}` : "");
+  applyFilters();
+}
+
 async function boot(){
   try{
-    showLoading("Carregando índice (data/index.json)…");
+    // 1) tenta carregar do cache imediatamente (sem "Aguarde...")
+    const cache = loadIndexCache();
+    if (cache && Array.isArray(cache.records) && Array.isArray(cache.tracks)){
+      initFromIndex(cache, "cache");
+      // faz refresh em background (sem travar a UI)
+      setStatus("Atualizando…", "#ffcc00");
+      fetch(INDEX_PATH, { cache: "no-store" })
+        .then(r => { if(!r.ok) throw new Error("Falha ao atualizar índice"); return r.json(); })
+        .then(idx => {
+          // só atualiza se mudou o hash (ou tamanho)
+          const mudou = (idx.pdf_sha256 && idx.pdf_sha256 !== cache.pdf_sha256) || ((idx.records||[]).length !== (cache.records||[]).length);
+          if (mudou){
+            saveIndexCache(idx);
+            initFromIndex(idx, "atualizado");
+          } else {
+            setStatus("Pronto", "#33d17a");
+          }
+        })
+        .catch(_ => setStatus("Pronto", "#33d17a"));
+      return;
+    }
+
+    // 2) primeira vez: carrega do arquivo (pode mostrar "Aguarde..." só se demorar)
+    showLoadingDeferred("Carregando índice (data/index.json)…");
 
     const resp = await fetch(INDEX_PATH, { cache: "no-store" });
     if (!resp.ok) throw new Error(`Não consegui abrir: ${INDEX_PATH}`);
     const idx = await resp.json();
 
-    dados = idx.records || [];
-    pistas = idx.tracks || [];
-
-    pistasFiltradas = pistas.slice();
-    renderDropdown();
-    closeDropdown();
-
-    hideLoading();
-    setStatus("Pronto", "#33d17a");
-    elCacheInfo.textContent = `Índice: ok • Registros: ${dados.length} • Pistas: ${pistas.length}`;
-    applyFilters();
+    saveIndexCache(idx);
+    hideLoadingSafe();
+    initFromIndex(idx, "primeira vez");
   }catch(e){
-    hideLoading();
+    hideLoadingSafe();
     setStatus("Erro", "#ffcc00");
     tbody.innerHTML = `<tr><td colspan="6" class="empty">Erro ao carregar índice. Veja o console.</td></tr>`;
     console.error(e);

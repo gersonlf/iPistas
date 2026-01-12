@@ -199,5 +199,9 @@ button.primary{
 }
 .empty{color:var(--muted); text-align:center;}
 
-.pdflink{color:var(--prim); text-decoration:none;}
-.pdflink:hover{text-decoration:underline;}
+/* Coluna "Início da semana" em uma linha */
+.tbl th:nth-child(1), .tbl td:nth-child(1){
+  white-space: nowrap;
+  width: 130px;
+  min-width: 130px;
+}
