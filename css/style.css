@@ -1,0 +1,200 @@
+:root{
+  --bg:#0f1115;
+  --card:#171a21;
+  --borda:#2a2f3a;
+  --txt:#e9eef7;
+  --muted:#9aa6b2;
+  --prim:#4da3ff;
+  --ok:#33d17a;
+  --warn:#ffcc00;
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background:var(--bg);
+  color:var(--txt);
+}
+.topo{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px 18px;
+  border-bottom:1px solid var(--borda);
+  background:rgba(0,0,0,.15);
+}
+.titulo{font-weight:800; letter-spacing:.2px;}
+.sub{color:var(--muted); font-size:12px; margin-top:2px;}
+.status{display:flex; align-items:center; gap:10px; color:var(--muted); font-size:13px;}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--warn);display:inline-block;}
+.wrap{
+  max-width:1200px;
+  margin:0 auto;
+  padding:16px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+.card{
+  background:var(--card);
+  border:1px solid var(--borda);
+  border-radius:12px;
+  padding:14px;
+}
+.grid{
+  display:grid;
+  grid-template-columns: 1.2fr 1fr 1fr 1fr auto;
+  gap:12px;
+  align-items:end;
+}
+@media (max-width: 1100px){
+  .grid{grid-template-columns: 1fr; }
+  .actions{justify-content:flex-start;}
+}
+.field label{
+  display:block;
+  color:var(--muted);
+  font-size:12px;
+  margin-bottom:6px;
+}
+.field input{
+  width:100%;
+  padding:10px 12px;
+  border-radius:10px;
+  border:1px solid var(--borda);
+  background:#0f1218;
+  color:var(--txt);
+  outline:none;
+}
+.field input:focus{
+  border-color:rgba(77,163,255,.6);
+  box-shadow: 0 0 0 3px rgba(77,163,255,.12);
+}
+.lookup{
+  display:flex;
+  gap:8px;
+}
+.lookup button{
+  width:44px;
+  border-radius:10px;
+  border:1px solid var(--borda);
+  background:#0f1218;
+  color:var(--txt);
+  cursor:pointer;
+}
+.lookup button:hover{border-color:rgba(77,163,255,.45);}
+.hint{color:var(--muted); font-size:12px; margin-top:8px;}
+.field{position:relative;}
+.dropdown{
+  position:absolute;
+  top:74px;
+  left:0;
+  right:58px;
+  max-height:260px;
+  overflow:auto;
+  background:#0f1218;
+  border:1px solid var(--borda);
+  border-radius:10px;
+  padding:6px;
+  z-index:50;
+}
+.item{
+  padding:8px 10px;
+  border-radius:8px;
+  cursor:pointer;
+}
+.item:hover{background:rgba(77,163,255,.12);}
+.item.sel{background:rgba(77,163,255,.18); outline:1px solid rgba(77,163,255,.22);}
+
+.checks .checkrow{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  padding:8px 10px;
+  border:1px solid var(--borda);
+  border-radius:10px;
+  background:#0f1218;
+}
+.chk{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  color:var(--txt);
+  font-size:13px;
+}
+.chk input{width:auto;}
+
+.actions{
+  display:flex;
+  gap:10px;
+  justify-content:flex-end;
+}
+button{
+  padding:10px 12px;
+  border-radius:10px;
+  border:1px solid var(--borda);
+  background:#0f1218;
+  color:var(--txt);
+  cursor:pointer;
+}
+button:hover{border-color:rgba(77,163,255,.45);}
+button.primary{
+  background:rgba(77,163,255,.18);
+  border-color:rgba(77,163,255,.35);
+}
+
+.loading{
+  margin-top:12px;
+  display:flex;
+  gap:12px;
+  align-items:center;
+  padding:12px;
+  border-radius:12px;
+  border:1px dashed rgba(255,255,255,.15);
+  background:rgba(0,0,0,.12);
+}
+.spinner{
+  width:22px;height:22px;border-radius:50%;
+  border:3px solid rgba(255,255,255,.15);
+  border-top-color: var(--prim);
+  animation: spin .9s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loadingTitle{font-weight:800;}
+.loadingSub{color:var(--muted); font-size:12px; margin-top:2px;}
+
+.resultTop{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:10px;
+}
+.resultTitle{font-size:16px; font-weight:800;}
+.resultSub,.small{color:var(--muted); font-size:12px;}
+
+.tableWrap{
+  margin-top:10px;
+  overflow:auto;
+  border-radius:10px;
+  border:1px solid var(--borda);
+}
+.tbl{
+  width:100%;
+  border-collapse:collapse;
+  min-width:1050px;
+}
+.tbl th, .tbl td{
+  padding:10px 12px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+  font-size:13px;
+  vertical-align:top;
+}
+.tbl th{
+  color:var(--muted);
+  text-align:left;
+  background:rgba(0,0,0,.14);
+  position:sticky;
+  top:0;
+}
+.empty{color:var(--muted); text-align:center;}
