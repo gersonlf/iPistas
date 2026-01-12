@@ -5,7 +5,7 @@
 // Quando você atualizar o PDF, rode o script build_index.py (incluso no ZIP) e suba de novo.
 
 const INDEX_PATH = "data/index.json";
-const BUILD_VERSION = "20260112_0125";
+const BUILD_VERSION = "20260112_0145";
 
 const CATEGORIAS = ["OVAL", "SPORTS CAR", "FORMULA CAR", "DIRT OVAL", "DIRT ROAD", "UNRANKED"];
 const CLASSES = ["R","D","C","B","A"];
@@ -19,6 +19,7 @@ const elCacheInfo = document.getElementById("cacheInfo");
 const trackInput = document.getElementById("trackInput");
 const seriesFilter = document.getElementById("seriesFilter");
 const carsFilter = document.getElementById("carsFilter");
+const sortSelect = document.getElementById("sortSelect");
 const btnSearch = document.getElementById("btnSearch");
 const btnClear = document.getElementById("btnClear");
 
@@ -48,6 +49,7 @@ function showLoading(txt){
   trackInput.disabled = true;
   seriesFilter.disabled = true;
   if (carsFilter) carsFilter.disabled = true;
+  if (sortSelect) sortSelect.disabled = true;
   btnSearch.disabled = true;
   btnClear.disabled = true;
   btnToggleDrop.disabled = true;
@@ -59,6 +61,7 @@ function hideLoading(){
   trackInput.disabled = false;
   seriesFilter.disabled = false;
   if (carsFilter) carsFilter.disabled = false;
+  if (sortSelect) sortSelect.disabled = false;
   btnSearch.disabled = false;
   btnClear.disabled = false;
   btnToggleDrop.disabled = false;
@@ -273,7 +276,16 @@ function applyFilters(){
     return true;
   });
 
-  rows.sort((a,b) => (a.inicio_semana || "").localeCompare(b.inicio_semana || "") || (a.week - b.week) || (a.serie || "").localeCompare(b.serie || ""));
+  // Ordenação
+  const ord = sortSelect ? sortSelect.value : "date";
+  if (ord === "week_asc"){
+    rows.sort((a,b) => (a.week - b.week) || (a.inicio_semana || "").localeCompare(b.inicio_semana || "") || (a.serie || "").localeCompare(b.serie || ""));
+  } else if (ord === "week_desc"){
+    rows.sort((a,b) => (b.week - a.week) || (a.inicio_semana || "").localeCompare(b.inicio_semana || "") || (a.serie || "").localeCompare(b.serie || ""));
+  } else {
+    // padrão: por data -> week -> série
+    rows.sort((a,b) => (a.inicio_semana || "").localeCompare(b.inicio_semana || "") || (a.week - b.week) || (a.serie || "").localeCompare(b.serie || ""));
+  }
   renderTable(rows);
 
   resultSub.textContent = `Resultados: ${rows.length} (de ${dados.length})`;
@@ -289,6 +301,7 @@ btnClear.addEventListener("click", () => {
   trackInput.value = "";
   seriesFilter.value = "";
   if (carsFilter) carsFilter.value = "";
+  if (sortSelect) sortSelect.value = "date";
   catChecks.forEach(c => c.checked = true);
   classChecks.forEach(c => c.checked = true);
   closeDropdown();
@@ -300,6 +313,7 @@ btnClear.addEventListener("click", () => {
 [catsWrap, classesWrap].forEach(el => el.addEventListener("change", () => applyFilters()));
 seriesFilter.addEventListener("input", () => applyFilters());
 if (carsFilter) carsFilter.addEventListener("input", () => applyFilters());
+if (sortSelect) sortSelect.addEventListener("change", () => applyFilters());
 
 const INDEX_CACHE_KEY = "ipista_index_cache_v1";
 

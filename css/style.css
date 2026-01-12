@@ -249,3 +249,18 @@ button.primary{
 
 /* Mantém botões na parte de baixo enquanto os campos ficam alinhados no topo */
 .actions{align-self:end;}
+
+/* Select com o mesmo visual do input */
+.field select{
+  width:100%;
+  padding:10px 12px;
+  border-radius:10px;
+  border:1px solid var(--borda);
+  background:#0f1218;
+  color:var(--txt);
+  outline:none;
+}
+.field select:focus{
+  border-color:rgba(77,163,255,.6);
+  box-shadow: 0 0 0 3px rgba(77,163,255,.12);
+}

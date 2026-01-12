@@ -4,13 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>iPista (Web) • SeasonSchedule</title>
-  <link rel="stylesheet" href="css/style.css?v=20260112_0125" />
+  <link rel="stylesheet" href="css/style.css?v=20260112_0145" />
 </head>
 <body>
   <header class="topo">
     <div>
       <div class="titulo">iPista (Web)</div>
-      <div class="sub">Offline (GitHub Pages)</div>
+      <div class="sub">Offline (GitHub Pages) lendo o PDF do repositório</div>
     </div>
     <div class="status">
       <span class="dot" id="dot"></span>
@@ -28,7 +28,7 @@
             <button id="toggleDrop" type="button" title="Abrir lista">▼</button>
           </div>
           <div id="dropdown" class="dropdown" hidden></div>
-          <div class="hint">Dicas: ↓ abre, ↑/↓ navega, Enter seleciona, Esc limpa/fecha.</div>
+          <div class="hint">Dicas: ↓ abre, ↑/↓ navega, Enter seleciona, Esc limpa/fecha. O foco fica no campo.</div>
         </div>
 
         <div class="field">
@@ -52,6 +52,17 @@
         <div class="field checks">
           <label>Classes</label>
           <div class="checkrow" id="classes"></div>
+        </div>
+
+
+        <div class="field">
+          <label>Ordenar</label>
+          <select id="sortSelect">
+            <option value="date">Data (padrão)</option>
+            <option value="week_asc">Week (crescente)</option>
+            <option value="week_desc">Week (decrescente)</option>
+          </select>
+          <div class="hint">Ordenação dos resultados.</div>
         </div>
 
         <div class="actions">
@@ -98,6 +109,6 @@
       </div>
     </section>
   </main>
-<script src="js/app.js?v=20260112_0125"></script>
+<script src="js/app.js?v=20260112_0145"></script>
 </body>
 </html>
