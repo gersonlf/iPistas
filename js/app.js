@@ -5,7 +5,7 @@
 // Quando você atualizar o PDF, rode o script build_index.py (incluso no ZIP) e suba de novo.
 
 const INDEX_PATH = "data/index.json";
-const BUILD_VERSION = "20260112_0815";
+const BUILD_VERSION = "20260112_0905";
 const CACHE_SCHEMA_VERSION = 2;
 
 const CATEGORIAS = ["OVAL", "SPORTS CAR", "FORMULA CAR", "DIRT OVAL", "DIRT ROAD", "UNRANKED"];
@@ -16,6 +16,8 @@ const elStatus = document.getElementById("statusTxt");
 const elLoading = document.getElementById("loading");
 const elLoadingSub = document.getElementById("loadingSub");
 const elCacheInfo = document.getElementById("cacheInfo");
+let tooltipEl = null;
+let tooltipHideTimer = null;
 const elVerInline = document.getElementById("verInline");
 
 const trackInput = document.getElementById("trackInput");
@@ -77,6 +79,151 @@ function escHTML(s){
     .replace(/>/g,"&gt;")
     .replace(/"/g,"&quot;");
 }
+
+function pad2(n){ return String(n).padStart(2,"0"); }
+
+function parseScheduleRaw(raw){
+  // Retorna {tipo, textoPT, listaTimes:[...], original}
+  // Tipos suportados:
+  // - every_hours (intervalHours, minute)
+  // - every_hour (minute)
+  // - every_minutes_offsets (intervalMinutes, offsets[])
+  // - fixed_gmt (items: [{dow:0-6, hour, min}])
+  const s = (raw || "").trim();
+  if (!s) return null;
+
+  // every X hours at :MM past
+  let m = s.match(/^Races\s+every\s+(\d+)\s+hours?\s+at\s*:?\s*(\d{1,2})\s+past\s*$/i);
+  if (m){
+    const interval = parseInt(m[1],10);
+    const minute = parseInt(m[2],10);
+    const pt = `A cada ${interval} horas, no minuto ${pad2(minute)}.`;
+    const times = [];
+    for (let h=0; h<24; h+=interval){
+      times.push(`${pad2(h)}:${pad2(minute)}`);
+    }
+    return { tipo:"every_hours", intervalHours:interval, minute, textoPT:pt, listaTimes:times, original:s };
+  }
+
+  // every hour at :MM past
+  m = s.match(/^Races\s+every\s+hour\s+at\s*:?\s*(\d{1,2})\s+past\s*$/i);
+  if (m){
+    const minute = parseInt(m[1],10);
+    const pt = `A cada 1 hora, no minuto ${pad2(minute)}.`;
+    const times = [];
+    for (let h=0; h<24; h+=1){
+      times.push(`${pad2(h)}:${pad2(minute)}`);
+    }
+    return { tipo:"every_hour", intervalHours:1, minute, textoPT:pt, listaTimes:times, original:s };
+  }
+
+  // every N minutes at :15 and :45 (or similar)
+  m = s.match(/^Races\s+every\s+(\d+)\s+minutes?\s+at\s+(.+)$/i);
+  if (m){
+    const intervalMin = parseInt(m[1],10);
+    const rest = m[2];
+    // captura :15, :45 etc
+    const offs = (rest.match(/:\s*\d{1,2}/g) || []).map(x => parseInt(x.replace(/\D/g,""),10)).filter(v => v>=0 && v<60);
+    if (offs.length){
+      const pt = `A cada ${intervalMin} minutos, nos minutos ${offs.map(o=>pad2(o)).join(" e ")}.`;
+      const times=[];
+      for (let h=0; h<24; h++){
+        for (const o of offs){
+          times.push(`${pad2(h)}:${pad2(o)}`);
+        }
+      }
+      return { tipo:"every_minutes_offsets", intervalMinutes:intervalMin, offsets:offs, textoPT:pt, listaTimes:times, original:s };
+    }
+  }
+
+  // Fixed GMT like: Races Friday at 19 GMT, Saturday at 7 GMT, Sunday at 18 GMT
+  if (/\bGMT\b/i.test(s)){
+    const mapDow = {sunday:0, monday:1, tuesday:2, wednesday:3, thursday:4, friday:5, saturday:6};
+    const items=[];
+    const parts = s.replace(/^Races\s*/i,"").split(/,\s*/);
+    for (const part of parts){
+      const mm = part.trim().match(/^(Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday)\s+at\s+(\d{1,2})(?::(\d{2}))?\s+GMT$/i);
+      if (mm){
+        const dow = mapDow[mm[1].toLowerCase()];
+        const hour = parseInt(mm[2],10);
+        const min = mm[3] ? parseInt(mm[3],10) : 0;
+        items.push({dow, hour, min});
+      }
+    }
+    if (items.length){
+      const pt = "Horários fixos (GMT) convertidos para seu horário local.";
+      return { tipo:"fixed_gmt", items, textoPT:pt, original:s };
+    }
+  }
+
+  // fallback
+  return { tipo:"raw", textoPT:"Horário/agenda da série:", original:s };
+}
+
+function buildTwoColTable(times){
+  if (!times || !times.length) return "";
+  const half = Math.ceil(times.length/2);
+  const left = times.slice(0, half);
+  const right = times.slice(half);
+  let rows = "";
+  for (let i=0; i<half; i++){
+    const a = left[i] || "";
+    const b = right[i] || "";
+    rows += `<tr><td>${escHTML(a)}</td><td>${escHTML(b)}</td></tr>`;
+  }
+  return `<table class="tooltipGrid"><tbody>${rows}</tbody></table>`;
+}
+
+function nextOccurrencesFromFixedGMT(items, count=8){
+  // Próximas ocorrências (local) a partir de agora, usando os DOW/horário em UTC (GMT).
+  const now = new Date();
+  const out=[];
+  for (let step=0; step<14; step++){ // procura até 2 semanas
+    for (const it of items){
+      // dia alvo: hoje + step dias, mas tem que bater dow
+      const d = new Date(now);
+      d.setHours(0,0,0,0);
+      d.setDate(d.getDate()+step);
+      if (d.getDay() !== it.dow) continue;
+      // cria date UTC no dia encontrado
+      const utc = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), it.hour, it.min, 0));
+      if (utc.getTime() <= now.getTime()) continue;
+      // formata local HH:MM e dia
+      const day = utc.toLocaleDateString(undefined, {weekday:"short"});
+      const time = utc.toLocaleTimeString(undefined, {hour:"2-digit", minute:"2-digit"});
+      out.push(`${day} ${time}`);
+      if (out.length >= count) return out;
+    }
+  }
+  return out;
+}
+
+function buildHorarioTooltipHTML(raw){
+  const info = parseScheduleRaw(raw);
+  if (!info) return null;
+
+  let title = info.textoPT || "Horários";
+  let table = "";
+  let sub = "";
+
+  if (info.tipo === "fixed_gmt"){
+    const next = nextOccurrencesFromFixedGMT(info.items, 8);
+    table = buildTwoColTable(next);
+    sub = `Origem: ${info.original}`;
+  } else if (info.listaTimes && info.listaTimes.length){
+    table = buildTwoColTable(info.listaTimes);
+    sub = `Origem: ${info.original}`;
+  } else {
+    sub = info.original ? `Origem: ${info.original}` : "";
+  }
+
+  return `
+    <div class="tooltipTitle">${escHTML(title)}</div>
+    ${table}
+    ${sub ? `<div class="tooltipSub">${escHTML(sub)}</div>` : ``}
+  `;
+}
+
 
 function parseISODate(iso){
   // iso: YYYY-MM-DD -> Date (meia-noite local)
@@ -256,7 +403,7 @@ function renderTable(rows){
   }
   for (const d of rows){
     const tr = document.createElement("tr");
-    const horarioTd = d.horarios ? `<td class="tdClock"><span class="clock" data-tip="${escHTML(d.horarios)}" aria-label="Horários">⏱</span></td>` : `<td class="tdClock"></td>`;
+        const horarioTd = d.horarios ? `<td class="tdClock"><span class="clock" data-raw="${escHTML(d.horarios)}" aria-label="Horários">⏱</span></td>` : `<td class="tdClock"></td>`;
         // Destaque: se a data de consulta cair na semana desta linha
     const dtIni = parseISODate(d.inicio_semana);
     if (dtConsulta && dtIni){
@@ -279,6 +426,7 @@ function renderTable(rows){
     `;
     tbody.appendChild(tr);
   }
+  try{ bindHorarioTooltips(elTabela); }catch(e){}
 }
 
 function applyFilters(){
@@ -437,3 +585,57 @@ async function boot(){
 }
 
 boot();
+
+
+function ensureTooltipEl(){
+  if (tooltipEl) return tooltipEl;
+  tooltipEl = document.createElement("div");
+  tooltipEl.className = "tooltipBox";
+  document.body.appendChild(tooltipEl);
+  return tooltipEl;
+}
+
+function showTooltipFor(targetEl, html){
+  const el = ensureTooltipEl();
+  el.innerHTML = html;
+  el.classList.add("show");
+  // posiciona próximo do ícone, com clamp na tela
+  const r = targetEl.getBoundingClientRect();
+  const margin = 10;
+  const w = el.offsetWidth || 320;
+  const h = el.offsetHeight || 120;
+  let x = r.left + (r.width/2) - (w/2);
+  let y = r.bottom + 10;
+  x = Math.max(margin, Math.min(window.innerWidth - w - margin, x));
+  // se não couber embaixo, coloca em cima
+  if (y + h + margin > window.innerHeight){
+    y = r.top - h - 10;
+  }
+  y = Math.max(margin, Math.min(window.innerHeight - h - margin, y));
+  el.style.left = `${x}px`;
+  el.style.top = `${y}px`;
+}
+
+function hideTooltip(){
+  if (!tooltipEl) return;
+  tooltipEl.classList.remove("show");
+}
+
+function bindHorarioTooltips(scopeEl=document){
+  scopeEl.querySelectorAll(".clock[data-raw]").forEach((node)=>{
+    if (node.__ttBound) return;
+    node.__ttBound = true;
+    node.addEventListener("mouseenter", ()=>{
+      if (tooltipHideTimer){ clearTimeout(tooltipHideTimer); tooltipHideTimer=null; }
+      const raw = node.getAttribute("data-raw") || "";
+      const html = buildHorarioTooltipHTML(raw);
+      if (html) showTooltipFor(node, html);
+    });
+    node.addEventListener("mouseleave", ()=>{
+      tooltipHideTimer = setTimeout(hideTooltip, 60);
+    });
+  });
+}
+
+window.addEventListener("scroll", ()=> hideTooltip(), {passive:true});
+window.addEventListener("resize", ()=> hideTooltip(), {passive:true});
