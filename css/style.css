@@ -177,6 +177,7 @@ button.primary{
   border:1px solid var(--borda);
 }
 .tbl{
+  table-layout: fixed;
   width:100%;
   border-collapse:collapse;
   min-width:1180px;
@@ -363,3 +364,8 @@ button.primary{
   vertical-align:middle;
 }
 
+
+/* Quebra de texto robusta nas colunas longas */
+.tbl td:nth-child(6), .tbl td:nth-child(7), .tbl td:nth-child(8){
+  overflow-wrap:anywhere;
+}
