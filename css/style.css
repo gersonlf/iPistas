@@ -297,12 +297,6 @@ button.primary{
 }
 
 
-/* Versão ao lado do título */
-.ver{
-  font-size:12px;
-  opacity:.75;
-  margin-top:2px;
-}
 
 /* Tooltip horários (não depende do title do browser) */
 .clock{
@@ -337,4 +331,12 @@ button.primary{
 .clock:hover::after{
   opacity:1;
   transform: translateY(0);
+}
+
+/* Versão inline no título */
+.verInline{
+  font-size: 12px;
+  font-weight: 600;
+  opacity: .7;
+  margin-left: 8px;
 }

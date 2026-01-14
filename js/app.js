@@ -5,7 +5,7 @@
 // Quando você atualizar o PDF, rode o script build_index.py (incluso no ZIP) e suba de novo.
 
 const INDEX_PATH = "data/index.json";
-const BUILD_VERSION = "20260112_0435";
+const BUILD_VERSION = "20260112_0505";
 
 const CATEGORIAS = ["OVAL", "SPORTS CAR", "FORMULA CAR", "DIRT OVAL", "DIRT ROAD", "UNRANKED"];
 const CLASSES = ["R","D","C","B","A"];
@@ -15,7 +15,7 @@ const elStatus = document.getElementById("statusTxt");
 const elLoading = document.getElementById("loading");
 const elLoadingSub = document.getElementById("loadingSub");
 const elCacheInfo = document.getElementById("cacheInfo");
-const elVer = document.getElementById("ver");
+const elVerInline = document.getElementById("verInline");
 
 const trackInput = document.getElementById("trackInput");
 const seriesFilter = document.getElementById("seriesFilter");
@@ -374,7 +374,9 @@ function hideLoadingSafe(){
 }
 
 function initFromIndex(idx, origem){
-  if (elVer) elVer.textContent = `v${BUILD_VERSION}`;
+  if (elVerInline) elVerInline.textContent = `v${BUILD_VERSION}`;
+  document.title = `iPista (Web) v${BUILD_VERSION}`;
+  if (elVerInline) elVerInline.textContent = `v${BUILD_VERSION}`;
   dados = idx.records || [];
   pistas = idx.tracks || [];
 
