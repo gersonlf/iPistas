@@ -5,7 +5,7 @@
 // Quando você atualizar o PDF, rode o script build_index.py (incluso no ZIP) e suba de novo.
 
 const INDEX_PATH = "data/index.json";
-const BUILD_VERSION = "20260112_0905";
+const BUILD_VERSION = "20260112_0935";
 const CACHE_SCHEMA_VERSION = 2;
 
 const CATEGORIAS = ["OVAL", "SPORTS CAR", "FORMULA CAR", "DIRT OVAL", "DIRT ROAD", "UNRANKED"];
@@ -426,7 +426,7 @@ function renderTable(rows){
     `;
     tbody.appendChild(tr);
   }
-  try{ bindHorarioTooltips(elTabela); }catch(e){}
+  try{ bindHorarioTooltips(document); }catch(e){}
 }
 
 function applyFilters(){
@@ -634,8 +634,19 @@ function bindHorarioTooltips(scopeEl=document){
     node.addEventListener("mouseleave", ()=>{
       tooltipHideTimer = setTimeout(hideTooltip, 60);
     });
+    node.addEventListener("click", (ev)=>{
+      ev.preventDefault();
+      ev.stopPropagation();
+      if (tooltipHideTimer){ clearTimeout(tooltipHideTimer); tooltipHideTimer=null; }
+      const raw = node.getAttribute("data-raw") || "";
+      const html = buildHorarioTooltipHTML(raw);
+      if (html) showTooltipFor(node, html);
+    });
   });
 }
 
 window.addEventListener("scroll", ()=> hideTooltip(), {passive:true});
 window.addEventListener("resize", ()=> hideTooltip(), {passive:true});
+
+
+document.addEventListener("click", ()=> hideTooltip());
