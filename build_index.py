@@ -123,7 +123,7 @@ def main():
                     collecting_cars = False
                     # Após capturar a lista de carros, o PDF costuma trazer uma linha de horários (Races ...)
                     # Vamos capturar a primeira que aparecer.
-                    horarios_serie = horarios_serie  # mantém caso já tenha sido capturado
+                    horarios_serie = ""
 
                 else:
                     if not is_garbage(line) and not is_meta(line):
