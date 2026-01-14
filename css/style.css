@@ -301,8 +301,7 @@ button.primary{
 /* Tooltip horários (não depende do title do browser) */
 .clock{
   position:relative;
-  margin-left:6px;
-  font-size:13px;
+    font-size:13px;
   opacity:.85;
   cursor:help;
   user-select:none;
@@ -339,4 +338,18 @@ button.primary{
   font-weight: 600;
   opacity: .7;
   margin-left: 8px;
+}
+
+/* Série: ícone em "coluna" fixa para alinhar todas as linhas */
+.serieCell{
+  display:grid;
+  grid-template-columns: 18px 1fr;
+  column-gap:8px;
+  align-items:center;
+}
+.serieCell .clock{
+  justify-self:start;
+}
+.serieCell .serieText{
+  min-width:0;
 }
