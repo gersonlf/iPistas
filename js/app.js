@@ -5,7 +5,7 @@
 // Quando você atualizar o PDF, rode o script build_index.py (incluso no ZIP) e suba de novo.
 
 const INDEX_PATH = "data/index.json";
-const BUILD_VERSION = "20260112_1005";
+const BUILD_VERSION = "20260112_1045";
 const CACHE_SCHEMA_VERSION = 2;
 
 const CATEGORIAS = ["OVAL", "SPORTS CAR", "FORMULA CAR", "DIRT OVAL", "DIRT ROAD", "UNRANKED"];
@@ -83,60 +83,86 @@ function escHTML(s){
 function pad2(n){ return String(n).padStart(2,"0"); }
 
 function parseScheduleRaw(raw){
-  // Retorna {tipo, textoPT, listaTimes:[...], original}
-  // Tipos suportados:
-  // - every_hours (intervalHours, minute)
-  // - every_hour (minute)
-  // - every_minutes_offsets (intervalMinutes, offsets[])
-  // - fixed_gmt (items: [{dow:0-6, hour, min}])
+  // Retorna {tipo, listaTimes:[...], original, ...}
   const s = (raw || "").trim();
   if (!s) return null;
 
   // every X hours at :MM past
-  let m = s.match(/^Races\s+every\s+(\d+)\s+hours?\s+at\s*:?\s*(\d{1,2})\s+past\s*$/i);
+  let m = s.match(/^Races\s+every\s+(\d+)\s+hours?\s+at\s*:?[\s]*(\d{1,2})\s+past\s*$/i);
   if (m){
     const interval = parseInt(m[1],10);
     const minute = parseInt(m[2],10);
-    const pt = `A cada ${interval} horas, no minuto ${pad2(minute)}.`;
     const times = [];
     for (let h=0; h<24; h+=interval){
       times.push(`${pad2(h)}:${pad2(minute)}`);
     }
-    return { tipo:"every_hours", intervalHours:interval, minute, textoPT:pt, listaTimes:times, original:s };
+    return { tipo:"every_hours", intervalHours:interval, minute, listaTimes:times, original:s };
+  }
+
+  // every X hours on the hour
+  m = s.match(/^Races\s+every\s+(\d+)\s+hours?\s+on\s+the\s+hour\s*$/i);
+  if (m){
+    const interval = parseInt(m[1],10);
+    const minute = 0;
+    const times = [];
+    for (let h=0; h<24; h+=interval){
+      times.push(`${pad2(h)}:${pad2(minute)}`);
+    }
+    return { tipo:"every_hours", intervalHours:interval, minute, listaTimes:times, original:s };
   }
 
   // every hour at :MM past
-  m = s.match(/^Races\s+every\s+hour\s+at\s*:?\s*(\d{1,2})\s+past\s*$/i);
+  m = s.match(/^Races\s+every\s+hour\s+at\s*:?[\s]*(\d{1,2})\s+past\s*$/i);
   if (m){
     const minute = parseInt(m[1],10);
-    const pt = `A cada 1 hora, no minuto ${pad2(minute)}.`;
     const times = [];
     for (let h=0; h<24; h+=1){
       times.push(`${pad2(h)}:${pad2(minute)}`);
     }
-    return { tipo:"every_hour", intervalHours:1, minute, textoPT:pt, listaTimes:times, original:s };
+    return { tipo:"every_hour", intervalHours:1, minute, listaTimes:times, original:s };
   }
 
-  // every N minutes at :15 and :45 (or similar)
+  // every hour on the hour
+  m = s.match(/^Races\s+every\s+hour\s+on\s+the\s+hour\s*$/i);
+  if (m){
+    const minute = 0;
+    const times = [];
+    for (let h=0; h<24; h+=1){
+      times.push(`${pad2(h)}:${pad2(minute)}`);
+    }
+    return { tipo:"every_hour", intervalHours:1, minute, listaTimes:times, original:s };
+  }
+
+  // every N minutes at :00 & :30  (captura números com ou sem ':')
   m = s.match(/^Races\s+every\s+(\d+)\s+minutes?\s+at\s+(.+)$/i);
   if (m){
     const intervalMin = parseInt(m[1],10);
-    const rest = m[2];
-    // captura :15, :45 etc
-    const offs = (rest.match(/:\s*\d{1,2}/g) || []).map(x => parseInt(x.replace(/\D/g,""),10)).filter(v => v>=0 && v<60);
+    const rest = m[2] || "";
+    const nums = (rest.match(/\b\d{1,2}\b/g) || [])
+      .map(x => parseInt(x,10))
+      .filter(v => v>=0 && v<60);
+    // remove duplicados preservando ordem
+    const offs = [];
+    for (const n of nums){ if (!offs.includes(n)) offs.push(n); }
+
     if (offs.length){
-      const pt = `A cada ${intervalMin} minutos, nos minutos ${offs.map(o=>pad2(o)).join(" e ")}.`;
       const times=[];
       for (let h=0; h<24; h++){
         for (const o of offs){
           times.push(`${pad2(h)}:${pad2(o)}`);
         }
       }
-      return { tipo:"every_minutes_offsets", intervalMinutes:intervalMin, offsets:offs, textoPT:pt, listaTimes:times, original:s };
+      // ordena por minuto para ficar 00:00,00:30,01:00...
+      times.sort((a,b)=>{
+        const [ah,am]=a.split(":").map(Number);
+        const [bh,bm]=b.split(":").map(Number);
+        return ah-bh || am-bm;
+      });
+      return { tipo:"every_minutes_offsets", intervalMinutes:intervalMin, offsets:offs, listaTimes:times, original:s };
     }
   }
 
-  // Fixed GMT like: Races Friday at 19 GMT, Saturday at 7 GMT, Sunday at 18 GMT
+  // Fixed GMT like: Races Friday at 19 GMT, Saturday at 7 GMT
   if (/\bGMT\b/i.test(s)){
     const mapDow = {sunday:0, monday:1, tuesday:2, wednesday:3, thursday:4, friday:5, saturday:6};
     const items=[];
@@ -151,13 +177,11 @@ function parseScheduleRaw(raw){
       }
     }
     if (items.length){
-      const pt = "Horários fixos (GMT) convertidos para seu horário local.";
-      return { tipo:"fixed_gmt", items, textoPT:pt, original:s };
+      return { tipo:"fixed_gmt", items, original:s };
     }
   }
 
-  // fallback
-  return { tipo:"raw", textoPT:"Horário/agenda da série:", original:s };
+  return { tipo:"raw", original:s };
 }
 
 function buildTwoColTableColumns(left, right, leftLabel="", rightLabel=""){

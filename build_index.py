@@ -72,6 +72,15 @@ def main():
     doc = fitz.open(PDF_PATH)
 
     records = []
+
+
+def retro_fill_horarios(registros, serie_atual, horarios):
+    if not serie_atual or not horarios:
+        return
+    for r in registros:
+        if r.get("serie") == serie_atual and not r.get("horarios"):
+            r["horarios"] = horarios
+
     categoria = ""
     classe = ""
     grupo = ""
