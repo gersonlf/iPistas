@@ -5,7 +5,7 @@
 // Quando você atualizar o PDF, rode o script build_index.py (incluso no ZIP) e suba de novo.
 
 const INDEX_PATH = "data/index.json";
-const BUILD_VERSION = "20260112_1305";
+const BUILD_VERSION = "20260112_1340";
 const CACHE_SCHEMA_VERSION = 3;
 
 const CATEGORIAS = ["OVAL", "SPORTS CAR", "FORMULA CAR", "DIRT OVAL", "DIRT ROAD", "UNRANKED"];
@@ -478,6 +478,12 @@ function renderTable(rows){
       <td>${escHTML(d.pista || "")}</td>
       <td>${escHTML(d.carros || "")}</td>
     `;
+    // assegura horário no dataset (evita problemas de escape em atributos)
+    try{
+      const clk = tr.querySelector(".clock");
+      if (clk && d.horarios) clk.dataset.raw = String(d.horarios);
+    }catch(e){}
+
     tbody.appendChild(tr);
   }
   try{ bindHorarioTooltips(document); }catch(e){}
@@ -677,13 +683,14 @@ function hideTooltip(){
 }
 
 function bindHorarioTooltips(scopeEl=document){
-  scopeEl.querySelectorAll(".clock[data-raw]").forEach((node)=>{
+  scopeEl.querySelectorAll(".clock").forEach((node)=>{
     if (node.__ttBound) return;
     node.__ttBound = true;
     node.addEventListener("mouseenter", ()=>{
       if (tooltipHideTimer){ clearTimeout(tooltipHideTimer); tooltipHideTimer=null; }
       const rawTempo = node.getAttribute("data-tempo") || "";
       const rawDur = node.getAttribute("data-dur") || "";
+      if (!raw || !String(raw).trim()) return;
       const html = buildHorarioTooltipHTML(raw);
       if (html) showTooltipFor(node, html);
     });
@@ -696,6 +703,7 @@ function bindHorarioTooltips(scopeEl=document){
       if (tooltipHideTimer){ clearTimeout(tooltipHideTimer); tooltipHideTimer=null; }
       const rawTempo = node.getAttribute("data-tempo") || "";
       const rawDur = node.getAttribute("data-dur") || "";
+      if (!raw || !String(raw).trim()) return;
       const html = buildHorarioTooltipHTML(raw);
       if (html) showTooltipFor(node, html);
     });
