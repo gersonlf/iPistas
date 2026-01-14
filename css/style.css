@@ -296,8 +296,17 @@ button.primary{
   box-shadow: inset 4px 0 0 rgba(77,163,255,.55);
 }
 
-/* Ícone de horários (tooltip via title) */
+
+/* Versão ao lado do título */
+.ver{
+  font-size:12px;
+  opacity:.75;
+  margin-top:2px;
+}
+
+/* Tooltip horários (não depende do title do browser) */
 .clock{
+  position:relative;
   margin-left:6px;
   font-size:13px;
   opacity:.85;
@@ -305,3 +314,27 @@ button.primary{
   user-select:none;
 }
 .clock:hover{ opacity:1; }
+.clock::after{
+  content: attr(data-tip);
+  position:absolute;
+  left:0;
+  top:100%;
+  margin-top:8px;
+  min-width: 240px;
+  max-width: 520px;
+  white-space: normal;
+  padding:8px 10px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:10px;
+  background:#0f1218;
+  color:var(--txt);
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  opacity:0;
+  transform: translateY(-2px);
+  pointer-events:none;
+  z-index:50;
+}
+.clock:hover::after{
+  opacity:1;
+  transform: translateY(0);
+}

@@ -5,7 +5,7 @@
 // Quando você atualizar o PDF, rode o script build_index.py (incluso no ZIP) e suba de novo.
 
 const INDEX_PATH = "data/index.json";
-const BUILD_VERSION = "20260112_0410";
+const BUILD_VERSION = "20260112_0435";
 
 const CATEGORIAS = ["OVAL", "SPORTS CAR", "FORMULA CAR", "DIRT OVAL", "DIRT ROAD", "UNRANKED"];
 const CLASSES = ["R","D","C","B","A"];
@@ -15,6 +15,7 @@ const elStatus = document.getElementById("statusTxt");
 const elLoading = document.getElementById("loading");
 const elLoadingSub = document.getElementById("loadingSub");
 const elCacheInfo = document.getElementById("cacheInfo");
+const elVer = document.getElementById("ver");
 
 const trackInput = document.getElementById("trackInput");
 const seriesFilter = document.getElementById("seriesFilter");
@@ -269,7 +270,7 @@ function renderTable(rows){
       <td style="text-align:center">${escHTML(d.week ?? "")}</td>
       <td>${escHTML(d.categoria || "")}</td>
       <td style="text-align:center">${escHTML(d.classe || "")}</td>
-      <td>${escHTML(d.serie || "")} ${d.horarios ? `<span class=\"clock\" title=\"${escHTML(d.horarios)}\" aria-label=\"Horários\">⏱</span>` : ""}</td>
+      <td>${escHTML(d.serie || "")} ${d.horarios ? `<span class=\"clock\" data-tip=\"${escHTML(d.horarios)}\" title=\"${escHTML(d.horarios)}\" aria-label=\"Horários\">⏱</span>` : ""}</td>
       <td>${escHTML(d.pista || "")}</td>
       <td>${escHTML(d.carros || "")}</td>
     `;
@@ -373,6 +374,7 @@ function hideLoadingSafe(){
 }
 
 function initFromIndex(idx, origem){
+  if (elVer) elVer.textContent = `v${BUILD_VERSION}`;
   dados = idx.records || [];
   pistas = idx.tracks || [];
 
