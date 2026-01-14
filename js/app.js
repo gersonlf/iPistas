@@ -5,7 +5,7 @@
 // Quando você atualizar o PDF, rode o script build_index.py (incluso no ZIP) e suba de novo.
 
 const INDEX_PATH = "data/index.json";
-const BUILD_VERSION = "20260112_1045";
+const BUILD_VERSION = "20260112_1155";
 const CACHE_SCHEMA_VERSION = 2;
 
 const CATEGORIAS = ["OVAL", "SPORTS CAR", "FORMULA CAR", "DIRT OVAL", "DIRT ROAD", "UNRANKED"];
@@ -457,6 +457,7 @@ function renderTable(rows){
   for (const d of rows){
     const tr = document.createElement("tr");
         const horarioTd = d.horarios ? `<td class="tdClock"><span class="clock" data-raw="${escHTML(d.horarios)}" aria-label="Horários">⏱</span></td>` : `<td class="tdClock"></td>`;
+        const tempoTd = (d.tempo || d.duracao) ? `<td class="tdWx"><span class="wx" data-tempo="${escHTML(d.tempo||"")}" data-dur="${escHTML(d.duracao||"")}" aria-label="Tempo">☁</span></td>` : `<td class="tdWx"></td>`;
         // Destaque: se a data de consulta cair na semana desta linha
     const dtIni = parseISODate(d.inicio_semana);
     if (dtConsulta && dtIni){
@@ -472,7 +473,7 @@ function renderTable(rows){
       <td>${d.week ?? ""}</td>
       <td>${escHTML(d.categoria || "")}</td>
       <td>${escHTML(d.classe || "")}</td>
-      ${horarioTd}
+      ${horarioTd}${tempoTd}
       <td>${escHTML(d.serie || "")}</td>
       <td>${escHTML(d.pista || "")}</td>
       <td>${escHTML(d.carros || "")}</td>
@@ -480,6 +481,7 @@ function renderTable(rows){
     tbody.appendChild(tr);
   }
   try{ bindHorarioTooltips(document); }catch(e){}
+  try{ bindTempoTooltips(document); }catch(e){}
 }
 
 function applyFilters(){
@@ -680,7 +682,8 @@ function bindHorarioTooltips(scopeEl=document){
     node.__ttBound = true;
     node.addEventListener("mouseenter", ()=>{
       if (tooltipHideTimer){ clearTimeout(tooltipHideTimer); tooltipHideTimer=null; }
-      const raw = node.getAttribute("data-raw") || "";
+      const rawTempo = node.getAttribute("data-tempo") || "";
+      const rawDur = node.getAttribute("data-dur") || "";
       const html = buildHorarioTooltipHTML(raw);
       if (html) showTooltipFor(node, html);
     });
@@ -691,7 +694,8 @@ function bindHorarioTooltips(scopeEl=document){
       ev.preventDefault();
       ev.stopPropagation();
       if (tooltipHideTimer){ clearTimeout(tooltipHideTimer); tooltipHideTimer=null; }
-      const raw = node.getAttribute("data-raw") || "";
+      const rawTempo = node.getAttribute("data-tempo") || "";
+      const rawDur = node.getAttribute("data-dur") || "";
       const html = buildHorarioTooltipHTML(raw);
       if (html) showTooltipFor(node, html);
     });
@@ -703,3 +707,85 @@ window.addEventListener("resize", ()=> hideTooltip(), {passive:true});
 
 
 document.addEventListener("click", ()=> hideTooltip());
+
+
+function buildTempoTooltipHTML(rawTempo, rawDur){
+  const s = (rawTempo || "").trim();
+  const dur = (rawDur || "").trim();
+  if (!s && !dur) return null;
+
+  // quebra por vírgulas
+  const parts = (s ? s.split(",").map(x=>x.trim()).filter(Boolean) : []);
+  let temp = "";
+  let rain = "";
+  let start = "";
+  let caut = "";
+  let qual = "";
+  const outros = [];
+
+  for (const p of parts){
+    if (!temp && /°F\s*\/\s*\d+/i.test(p)){
+      temp = p;
+      continue;
+    }
+    let mm = p.match(/^Rain chance\s*(.*)$/i);
+    if (mm){
+      rain = (mm[1] || "").trim();
+      rain = rain.replace(/^:\s*/,"").replace(/^\s*None\s*$/i,"None");
+      continue;
+    }
+    if (!start && /(Rolling start|Standing start)/i.test(p)){
+      start = p;
+      continue;
+    }
+    if (!caut && /caution/i.test(p)){
+      caut = p;
+      continue;
+    }
+    mm = p.match(/^Qual scrutiny\s*(.*)$/i);
+    if (mm){
+      qual = (mm[1] || "").trim().replace(/^[-:]\s*/,"");
+      if (!qual) qual = p;
+      continue;
+    }
+    if (p) outros.push(p);
+  }
+
+  // monta linhas somente quando existir
+  const rows = [];
+  if (temp) rows.push(["Temp", temp]);
+  if (rain) rows.push(["Rain chance", rain]);
+  if (start) rows.push(["Start", start]);
+  if (caut) rows.push(["Cautions", caut]);
+  if (qual) rows.push(["Qual scrutiny", qual]);
+  if (dur) rows.push(["Duração", dur]);
+
+  let html = `<div class="tooltipTitle">Condições</div>`;
+  if (rows.length){
+    html += `<table class="tooltipGrid"><tbody>` + rows.map(r=>{
+      return `<tr><td style="opacity:.7;font-weight:700;">${escHTML(r[0])}</td><td style="white-space:normal;opacity:.95;">${escHTML(r[1])}</td></tr>`;
+    }).join("") + `</tbody></table>`;
+  }
+  // se sobrou algo não mapeado, joga em "Outros" sem poluir (linha única)
+  if (outros.length){
+    html += `<div class="tooltipHint">Outros: ${escHTML(outros.join(", "))}</div>`;
+  }
+  return html;
+}
+
+function bindTempoTooltips(scopeEl=document){
+  scopeEl.querySelectorAll(".wx").forEach((node)=>{
+    if (node.__wxBound) return;
+    node.__wxBound = true;
+    const show = ()=>{
+      if (tooltipHideTimer){ clearTimeout(tooltipHideTimer); tooltipHideTimer=null; }
+      const rawTempo = node.getAttribute("data-tempo") || "";
+      const rawDur = node.getAttribute("data-dur") || "";
+      const html = buildTempoTooltipHTML(rawTempo, rawDur);
+      if (html) showTooltipFor(node, html);
+    };
+    node.addEventListener("mouseenter", show);
+    node.addEventListener("click", (ev)=>{ ev.preventDefault(); ev.stopPropagation(); show(); });
+    node.addEventListener("mouseleave", ()=>{ tooltipHideTimer = setTimeout(hideTooltip, 60); });
+  });
+}
