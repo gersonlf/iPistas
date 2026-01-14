@@ -25,6 +25,10 @@ def parse_week_header(line: str):
         return int(m.group(1)), m.group(2)
     return None
 
+def is_schedule(line: str) -> bool:
+    # Linhas típicas: "Races every 30 minutes at :15 and :45", "Races Friday at 19 GMT, ...", etc.
+    return bool(re.match(r"^Races\b", line.strip(), re.I))
+
 def is_meta(line: str) -> bool:
     return bool(re.search(r"Rookie|Pro/WC|Races every|Min entries|No incident|DQ at|Penalty|See race week|Split at|Drops:", line, re.I))
 
@@ -73,6 +77,7 @@ def main():
     grupo = ""
     serie = ""
     carros_serie = ""
+    horarios_serie = ""
     collecting_cars = False
     car_buffer = []
 
@@ -87,6 +92,7 @@ def main():
                 categoria = line
                 classe = grupo = serie = ""
                 carros_serie = ""
+                horarios_serie = ""
                 collecting_cars = False
                 car_buffer = []
                 i += 1
@@ -97,6 +103,7 @@ def main():
                 classe, grupo = cg
                 serie = ""
                 carros_serie = ""
+                horarios_serie = ""
                 collecting_cars = False
                 car_buffer = []
                 i += 1
@@ -114,11 +121,21 @@ def main():
                 if wk or line in CATEGORIAS or parse_class_group(line) or looks_series(line) or is_meta(line):
                     carros_serie = clean_spaces(" ".join(car_buffer))
                     collecting_cars = False
+                    # Após capturar a lista de carros, o PDF costuma trazer uma linha de horários (Races ...)
+                    # Vamos capturar a primeira que aparecer.
+                    horarios_serie = horarios_serie  # mantém caso já tenha sido capturado
+
                 else:
                     if not is_garbage(line) and not is_meta(line):
                         car_buffer.append(line)
                     i += 1
                     continue
+
+            # Captura horários (por série): primeira linha que começa com "Races"
+            if serie and is_schedule(line) and not horarios_serie:
+                horarios_serie = clean_spaces(line)
+                i += 1
+                continue
 
             wk = parse_week_header(line)
             if wk:
@@ -149,7 +166,8 @@ def main():
                     "grupo": grupo,
                     "serie": serie,
                     "pista": track,
-                    "carros": carros_serie
+                    "carros": carros_serie,
+                    "horarios": horarios_serie
                 })
 
                 i = j

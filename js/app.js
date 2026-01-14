@@ -5,7 +5,7 @@
 // Quando você atualizar o PDF, rode o script build_index.py (incluso no ZIP) e suba de novo.
 
 const INDEX_PATH = "data/index.json";
-const BUILD_VERSION = "20260112_0335";
+const BUILD_VERSION = "20260112_0410";
 
 const CATEGORIAS = ["OVAL", "SPORTS CAR", "FORMULA CAR", "DIRT OVAL", "DIRT ROAD", "UNRANKED"];
 const CLASSES = ["R","D","C","B","A"];
@@ -269,7 +269,7 @@ function renderTable(rows){
       <td style="text-align:center">${escHTML(d.week ?? "")}</td>
       <td>${escHTML(d.categoria || "")}</td>
       <td style="text-align:center">${escHTML(d.classe || "")}</td>
-      <td>${escHTML(d.serie || "")}</td>
+      <td>${escHTML(d.serie || "")} ${d.horarios ? `<span class=\"clock\" title=\"${escHTML(d.horarios)}\" aria-label=\"Horários\">⏱</span>` : ""}</td>
       <td>${escHTML(d.pista || "")}</td>
       <td>${escHTML(d.carros || "")}</td>
     `;
