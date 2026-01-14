@@ -5,7 +5,7 @@
 // Quando você atualizar o PDF, rode o script build_index.py (incluso no ZIP) e suba de novo.
 
 const INDEX_PATH = "data/index.json";
-const BUILD_VERSION = "20260112_1340";
+const BUILD_VERSION = "20260112_1415";
 const CACHE_SCHEMA_VERSION = 3;
 
 const CATEGORIAS = ["OVAL", "SPORTS CAR", "FORMULA CAR", "DIRT OVAL", "DIRT ROAD", "UNRANKED"];
@@ -686,27 +686,18 @@ function bindHorarioTooltips(scopeEl=document){
   scopeEl.querySelectorAll(".clock").forEach((node)=>{
     if (node.__ttBound) return;
     node.__ttBound = true;
-    node.addEventListener("mouseenter", ()=>{
+
+    const show = ()=>{
       if (tooltipHideTimer){ clearTimeout(tooltipHideTimer); tooltipHideTimer=null; }
-      const rawTempo = node.getAttribute("data-tempo") || "";
-      const rawDur = node.getAttribute("data-dur") || "";
+      const raw = (node.dataset && node.dataset.raw) ? node.dataset.raw : (node.getAttribute("data-raw") || "");
       if (!raw || !String(raw).trim()) return;
       const html = buildHorarioTooltipHTML(raw);
       if (html) showTooltipFor(node, html);
-    });
-    node.addEventListener("mouseleave", ()=>{
-      tooltipHideTimer = setTimeout(hideTooltip, 60);
-    });
-    node.addEventListener("click", (ev)=>{
-      ev.preventDefault();
-      ev.stopPropagation();
-      if (tooltipHideTimer){ clearTimeout(tooltipHideTimer); tooltipHideTimer=null; }
-      const rawTempo = node.getAttribute("data-tempo") || "";
-      const rawDur = node.getAttribute("data-dur") || "";
-      if (!raw || !String(raw).trim()) return;
-      const html = buildHorarioTooltipHTML(raw);
-      if (html) showTooltipFor(node, html);
-    });
+    };
+
+    node.addEventListener("mouseenter", show);
+    node.addEventListener("click", (ev)=>{ ev.preventDefault(); ev.stopPropagation(); show(); });
+    node.addEventListener("mouseleave", ()=>{ tooltipHideTimer = setTimeout(hideTooltip, 60); });
   });
 }
 
