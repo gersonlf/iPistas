@@ -5,7 +5,7 @@
 // Quando você atualizar o PDF, rode o script build_index.py (incluso no ZIP) e suba de novo.
 
 const INDEX_PATH = "data/index.json";
-const BUILD_VERSION = "20260112_0755";
+const BUILD_VERSION = "20260112_0815";
 const CACHE_SCHEMA_VERSION = 2;
 
 const CATEGORIAS = ["OVAL", "SPORTS CAR", "FORMULA CAR", "DIRT OVAL", "DIRT ROAD", "UNRANKED"];
@@ -345,7 +345,7 @@ seriesFilter.addEventListener("input", () => applyFilters());
 if (carsFilter) carsFilter.addEventListener("input", () => applyFilters());
 if (sortSelect) sortSelect.addEventListener("change", () => applyFilters());
 
-const INDEX_CACHE_KEY = "ipista_index_cache_v2";
+const INDEX_CACHE_KEY = "ipista_index_cache_20260112_0815";
 
 function loadIndexCache(){
   try{
@@ -393,6 +393,7 @@ function initFromIndex(idx, origem){
 }
 
 async function boot(){
+  const PREFER_NETWORK_FIRST = true;
   try{
     // 1) tenta carregar do cache imediatamente (sem "Aguarde...")
     const cache = loadIndexCache();
