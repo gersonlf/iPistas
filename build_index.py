@@ -178,7 +178,7 @@ def main():
     tracks = sorted({r["pista"] for r in records if r.get("pista")})
 
     idx = {
-        "version": 1,
+        "version": 2,
         "pdf_file": "assets/SeasonSchedule.pdf",
         "pdf_sha256": pdf_sha,
         "records": records,
