@@ -5,7 +5,7 @@
 // Quando você atualizar o PDF, rode o script build_index.py (incluso no ZIP) e suba de novo.
 
 const INDEX_PATH = "data/index.json";
-const BUILD_VERSION = "20260112_0620";
+const BUILD_VERSION = "20260112_0700";
 const CACHE_SCHEMA_VERSION = 2;
 
 const CATEGORIAS = ["OVAL", "SPORTS CAR", "FORMULA CAR", "DIRT OVAL", "DIRT ROAD", "UNRANKED"];
@@ -256,8 +256,8 @@ function renderTable(rows){
   }
   for (const d of rows){
     const tr = document.createElement("tr");
-    const horarioIcon = d.horarios ? `<span class="clock" data-tip="${escHTML(d.horarios)}" aria-label="Horários">⏱</span>` : "";
-    // Destaque: se a data de consulta cair na semana desta linha
+    const horarioTd = d.horarios ? `<td class="tdClock"><span class="clock" data-tip="${escHTML(d.horarios)}" aria-label="Horários">⏱</span></td>` : `<td class="tdClock"></td>`;
+        // Destaque: se a data de consulta cair na semana desta linha
     const dtIni = parseISODate(d.inicio_semana);
     if (dtConsulta && dtIni){
       const dtFim = new Date(dtIni.getTime());
@@ -269,10 +269,11 @@ function renderTable(rows){
     }
     tr.innerHTML = `
       <td>${escHTML(d.inicio_semana || "")}</td>
-      <td style="text-align:center">${escHTML(d.week ?? "")}</td>
+      <td>${d.week ?? ""}</td>
       <td>${escHTML(d.categoria || "")}</td>
-      <td style="text-align:center">${escHTML(d.classe || "")}</td>
-      <td><div class="serieCell">${horarioIcon}<span class="serieText">${escHTML(d.serie || "")}</span></div></td>
+      <td>${escHTML(d.classe || "")}</td>
+      ${horarioTd}
+      <td>${escHTML(d.serie || "")}</td>
       <td>${escHTML(d.pista || "")}</td>
       <td>${escHTML(d.carros || "")}</td>
     `;

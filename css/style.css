@@ -182,6 +182,7 @@ button.primary{
   min-width:1180px;
 }
 .tbl th, .tbl td{
+  vertical-align: top;
   padding:10px 12px;
   border-bottom:1px solid rgba(255,255,255,.06);
   font-size:13px;
@@ -232,13 +233,13 @@ button.primary{
 }
 
 
-/* Tabela: não quebrar linha em Categoria, Série e Pista (apenas Carros pode quebrar) */
-.tbl th:nth-child(3), .tbl td:nth-child(3),
-.tbl th:nth-child(5), .tbl td:nth-child(5),
-.tbl th:nth-child(6), .tbl td:nth-child(6){
+/* Tabela: Categoria sem quebra; Série e Pista podem quebrar; Carros pode quebrar */
+.tbl th:nth-child(3), .tbl td:nth-child(3){
   white-space: nowrap;
 }
-.tbl th:nth-child(7), .tbl td:nth-child(7){
+.tbl th:nth-child(6), .tbl td:nth-child(6),
+.tbl th:nth-child(7), .tbl td:nth-child(7),
+.tbl th:nth-child(8), .tbl td:nth-child(8){
   white-space: normal;
   word-break: break-word;
 }
@@ -337,8 +338,7 @@ button.primary{
   font-size: 12px;
   font-weight: 600;
   opacity: .7;
-  margin-left: 8px;
-}
+  }
 
 /* Série: ícone em "coluna" fixa para alinhar todas as linhas */
 .serieCell{
@@ -353,3 +353,13 @@ button.primary{
 .serieCell .serieText{
   min-width:0;
 }
+
+/* Coluna do ícone de horários */
+.thClock, .tdClock{
+  width:34px;
+  text-align:center;
+}
+.tdClock{
+  vertical-align:middle;
+}
+
