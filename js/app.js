@@ -5,7 +5,7 @@
 // Quando você atualizar o PDF, rode o script build_index.py (incluso no ZIP) e suba de novo.
 
 const INDEX_PATH = "data/index.json";
-const BUILD_VERSION = "20260112_0935";
+const BUILD_VERSION = "20260112_1005";
 const CACHE_SCHEMA_VERSION = 2;
 
 const CATEGORIAS = ["OVAL", "SPORTS CAR", "FORMULA CAR", "DIRT OVAL", "DIRT ROAD", "UNRANKED"];
@@ -160,6 +160,23 @@ function parseScheduleRaw(raw){
   return { tipo:"raw", textoPT:"Horário/agenda da série:", original:s };
 }
 
+function buildTwoColTableColumns(left, right, leftLabel="", rightLabel=""){
+  const L = left || [];
+  const R = right || [];
+  const n = Math.max(L.length, R.length);
+  let rows = "";
+  // cabeçalho opcional
+  if (leftLabel || rightLabel){
+    rows += `<tr><td style="opacity:.7;font-weight:700;">${escHTML(leftLabel)}</td><td style="opacity:.7;font-weight:700;">${escHTML(rightLabel)}</td></tr>`;
+  }
+  for (let i=0; i<n; i++){
+    const a = L[i] || "";
+    const b = R[i] || "";
+    rows += `<tr><td>${escHTML(a)}</td><td>${escHTML(b)}</td></tr>`;
+  }
+  return `<table class="tooltipGrid"><tbody>${rows}</tbody></table>`;
+}
+
 function buildTwoColTable(times){
   if (!times || !times.length) return "";
   const half = Math.ceil(times.length/2);
@@ -202,25 +219,37 @@ function buildHorarioTooltipHTML(raw){
   const info = parseScheduleRaw(raw);
   if (!info) return null;
 
-  let title = info.textoPT || "Horários";
-  let table = "";
-  let sub = "";
+  // Sempre mostra a frase original no topo (como no PDF)
+  const header = `<div class="tooltipTitle">${escHTML(info.original || raw || "")}</div>`;
 
-  if (info.tipo === "fixed_gmt"){
+  let table = "";
+  let hint = "";
+
+  // Para "every 2 hours", o PDF não informa se começa em 00:xx ou 01:xx.
+  // Então mostramos as duas possibilidades (pares e ímpares) em 2 colunas.
+  if (info.tipo === "every_hours" && info.intervalHours === 2 && typeof info.minute === "number"){
+    const even = [];
+    const odd  = [];
+    for (let h=0; h<24; h+=2) even.push(`${pad2(h)}:${pad2(info.minute)}`);
+    for (let h=1; h<24; h+=2) odd.push(`${pad2(h)}:${pad2(info.minute)}`);
+    // duas colunas: pares vs ímpares
+    table = buildTwoColTableColumns(even, odd, "Pares", "Ímpares");
+    hint = "Obs.: o PDF não informa o primeiro horário do dia; no iRacing pode começar em horas pares ou ímpares. Confirme no iRacing.";
+  } else if (info.tipo === "fixed_gmt"){
     const next = nextOccurrencesFromFixedGMT(info.items, 8);
     table = buildTwoColTable(next);
-    sub = `Origem: ${info.original}`;
   } else if (info.listaTimes && info.listaTimes.length){
     table = buildTwoColTable(info.listaTimes);
-    sub = `Origem: ${info.original}`;
-  } else {
-    sub = info.original ? `Origem: ${info.original}` : "";
+    // dica curta só quando o intervalo é maior que 1 hora (pode haver offset)
+    if (info.tipo === "every_hours" && info.intervalHours && info.intervalHours > 1){
+      hint = "Obs.: o PDF descreve o padrão; o primeiro horário exato do dia pode variar (offset).";
+    }
   }
 
   return `
-    <div class="tooltipTitle">${escHTML(title)}</div>
+    ${header}
     ${table}
-    ${sub ? `<div class="tooltipSub">${escHTML(sub)}</div>` : ``}
+    ${hint ? `<div class="tooltipHint">${escHTML(hint)}</div>` : ``}
   `;
 }
 
