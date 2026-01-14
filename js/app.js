@@ -5,7 +5,7 @@
 // Quando você atualizar o PDF, rode o script build_index.py (incluso no ZIP) e suba de novo.
 
 const INDEX_PATH = "data/index.json";
-const BUILD_VERSION = "20260112_1155";
+const BUILD_VERSION = "20260112_1225";
 const CACHE_SCHEMA_VERSION = 2;
 
 const CATEGORIAS = ["OVAL", "SPORTS CAR", "FORMULA CAR", "DIRT OVAL", "DIRT ROAD", "UNRANKED"];
@@ -714,7 +714,6 @@ function buildTempoTooltipHTML(rawTempo, rawDur){
   const dur = (rawDur || "").trim();
   if (!s && !dur) return null;
 
-  // quebra por vírgulas
   const parts = (s ? s.split(",").map(x=>x.trim()).filter(Boolean) : []);
   let temp = "";
   let rain = "";
@@ -724,34 +723,28 @@ function buildTempoTooltipHTML(rawTempo, rawDur){
   const outros = [];
 
   for (const p of parts){
-    if (!temp && /°F\s*\/\s*\d+/i.test(p)){
-      temp = p;
+    if (!temp && /°F\s*\/\s*\d+/i.test(p)){ temp = p; continue; }
+
+    const mmRain = p.match(/^Rain chance\s*(.*)$/i);
+    if (mmRain){
+      rain = (mmRain[1] || "").trim().replace(/^:\s*/,"");
       continue;
     }
-    let mm = p.match(/^Rain chance\s*(.*)$/i);
-    if (mm){
-      rain = (mm[1] || "").trim();
-      rain = rain.replace(/^:\s*/,"").replace(/^\s*None\s*$/i,"None");
-      continue;
-    }
-    if (!start && /(Rolling start|Standing start)/i.test(p)){
-      start = p;
-      continue;
-    }
-    if (!caut && /caution/i.test(p)){
-      caut = p;
-      continue;
-    }
-    mm = p.match(/^Qual scrutiny\s*(.*)$/i);
-    if (mm){
-      qual = (mm[1] || "").trim().replace(/^[-:]\s*/,"");
+
+    if (!start && /(Rolling start|Standing start)/i.test(p)){ start = p; continue; }
+
+    if (!caut && /caution/i.test(p)){ caut = p; continue; }
+
+    const mmQual = p.match(/^Qual scrutiny\s*(.*)$/i);
+    if (mmQual){
+      qual = (mmQual[1] || "").trim().replace(/^[-:]\s*/,"");
       if (!qual) qual = p;
       continue;
     }
+
     if (p) outros.push(p);
   }
 
-  // monta linhas somente quando existir
   const rows = [];
   if (temp) rows.push(["Temp", temp]);
   if (rain) rows.push(["Rain chance", rain]);
@@ -760,16 +753,23 @@ function buildTempoTooltipHTML(rawTempo, rawDur){
   if (qual) rows.push(["Qual scrutiny", qual]);
   if (dur) rows.push(["Duração", dur]);
 
-  let html = `<div class="tooltipTitle">Condições</div>`;
+  let html = '<div class="tooltipTitle">Condições</div>';
+
   if (rows.length){
-    html += `<table class="tooltipGrid"><tbody>` + rows.map(r=>{
-      return `<tr><td style="opacity:.7;font-weight:700;">${escHTML(r[0])}</td><td style="white-space:normal;opacity:.95;">${escHTML(r[1])}</td></tr>`;
-    }).join("") + `</tbody></table>`;
+    html += '<table class="tooltipGrid"><tbody>';
+    for (const r of rows){
+      html += '<tr>'
+            + '<td style="opacity:.7;font-weight:700;">' + escHTML(r[0]) + '</td>'
+            + '<td style="white-space:normal;opacity:.95;">' + escHTML(r[1]) + '</td>'
+            + '</tr>';
+    }
+    html += '</tbody></table>';
   }
-  // se sobrou algo não mapeado, joga em "Outros" sem poluir (linha única)
+
   if (outros.length){
-    html += `<div class="tooltipHint">Outros: ${escHTML(outros.join(", "))}</div>`;
+    html += '<div class="tooltipHint">Outros: ' + escHTML(outros.join(", ")) + '</div>';
   }
+
   return html;
 }
 
